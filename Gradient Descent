@@ -1,0 +1,82 @@
+# -*- coding: utf-8 -*-
+"""
+Spyder Editor
+
+Gradient Descent algorithm 
+"""
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+df = pd.read_csv(r"Enter the file name")
+
+def transform(s):
+    """ from string to number
+    """
+    d = {'CEO':0,'CFO':1,'CTO':2,'JANITOR':3,'JUNIOR':4,'MANAGER':5,'SENIOR':6,'VICE_PRESIDENT':7}
+    return d[s]
+
+df['jobType'] = df['jobType'].map(transform)
+
+def transform1(s):
+    d = {'BACHELORS':0,'DOCTORAL':1,'HIGH_SCHOOL':2,'MASTERS':3,'NONE':4}
+    return d[s]
+df['degree'] = df['degree'].map(transform1)
+
+def transform2(s):
+    d = {'BIOLOGY':0,'BUSINESS':1,'CHEMISTRY':2,'COMPSCI':3,'ENGINEERING':4,'LITERATURE':5,'MATH':6,'PHYSICS':7,'NONE':8}
+    return d[s]
+df['major'] = df['major'].map(transform2)
+
+def transform3(s):
+    d = {'AUTO':0,'EDUCATION':1,'FINANCE':2,'HEALTH':3,'OIL':4,'SERVICE':5,'WEB':6}
+    return d[s]
+df['industry'] = df['industry'].map(transform3)
+
+features = df.iloc[:,2:-1].values
+labels = df.iloc[:,-1].values
+
+# normalize the data
+a = features.max()
+b = features.min()
+c = features.mean()
+d = (features - c)/(a-b)
+#df.head()
+
+
+features = df.iloc[:,2:-1].values.reshape(1000000,6) # -1 tells numpy to figure out the dimension by itself
+ones = np.ones([features.shape[0], 1]) # create a array containing only ones 
+features = np.concatenate([ones, features],axis = 1) # cocatenate the ones to X matrix
+
+labels = df.iloc[:,-1].values
+
+theta = np.zeros((1,7))
+#theta = np.zeros([7,1000000])
+#set hyper parameters
+alpha = 0.01
+iters = 1000
+
+
+# create the cost function
+def computeCost(features,labels,theta):
+    tobesummed = np.power(((features @ theta.T)-labels),2)
+    return np.sum(tobesummed)/(2 * len(features))
+
+#gradient descent
+def gradientDescent(features,labels,theta,iters,alpha):
+    cost = np.zeros(iters)
+    for i in range(iters):
+        theta = theta - (alpha/len(features)) * np.sum(features * (features @ theta.T - labels), axis=0)
+        cost[i] = computeCost(features, labels, theta)
+    
+    return theta,cost
+
+#running the gd and cost function
+g,cost = gradientDescent(features,labels,theta,iters,alpha)
+print(g)
+
+final_cost = computeCost(features,labels,g)
+print(final_cost)
